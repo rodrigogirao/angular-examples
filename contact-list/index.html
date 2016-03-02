@@ -1,0 +1,45 @@
+<html ng-app="contact-list">
+<head>
+	<title>Hello World</title>
+	<script src="lib/angular/angular.js"></script>
+	<link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.min.css">
+	<script>
+		angular.module("contact-list", []);
+		angular.module("contact-list").controller("contactsController", function ($scope) {
+			$scope.app = "Lista Telefonica";
+			$scope.contacts = [
+				{name: "Pedro", phone: "123456789"},
+				{name: "Savio", phone: "987654321"},
+				{name: "Henrique", phone: "111111111"}
+			];
+			$scope.onClick = function(contact){
+				$scope.contacts.push(angular.copy(contact));
+				delete $scope.contact;
+			}
+		});
+	</script>
+
+</head>
+
+<body ng-controller="contactsController">
+	<div class="jumbotron">
+		<h3>{{app}}</h3>
+		<table class="table table-striped">
+			<tr>
+				<th>Nome</th>
+				<th>Telefone</th>
+			</tr>
+			<tr ng-repeat="contact in contacts">
+				<td>{{contact.name}}</td>
+				<td>{{contact.phone}}</td>
+			</tr>
+		</table>
+		<hr/>
+		<input class="form-control" type="text" ng-model="contact.name"></input>
+		<br/>
+		<input class="form-control" type="text" ng-model="contact.phone"></input>
+		<br/>
+		<button class="btn btn-primary btn-block" ng-click="onClick(contact)">Adicionar</button>
+	</div>
+</body>
+</html>
