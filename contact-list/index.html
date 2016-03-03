@@ -1,7 +1,9 @@
 <html ng-app="contact-list">
 <head>
+<meta charset="UTF-8">
 	<title>Hello World</title>
 	<script src="lib/angular/angular.js"></script>
+	<script src="lib/angular/angular-messages.js"></script>
 	<link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.min.css">
 	<style>
 		.jumbotron {
@@ -22,9 +24,9 @@
 		}
 	</style>
 	<script>
-		angular.module("contact-list", []);
+		angular.module("contact-list", ["ngMessages"]);
 		angular.module("contact-list").controller("contactsController", function ($scope) {
-			$scope.app = "Lista Telefonica";
+			$scope.app = "Lista Telefônica";
 			$scope.contacts = [
 			{name: "Pedro", phone: "(31) 123456789", company: {name: "Oi"}, color: "black"},
 			{name: "Savio", phone: "(41) 987654321", company: {name: "Tim"}, color: "green"},
@@ -46,6 +48,7 @@
 				contact.phone = '(' + contact.company.code + ') ' + contact.phone;
 				$scope.contacts.push(angular.copy(contact));
 				delete $scope.contact;
+				$scope.contactForm.$setPristine();
 			}
 			$scope.deleteContact = function(contacts) {
 				$scope.contacts = contacts.filter(function (contact) {
@@ -66,7 +69,7 @@
 	<div class="jumbotron">
 		<h3>{{app}}</h3>
 		<hr/>
-		<table class="table">
+		<table ng-show="contacts.length > 0" class="table">
 			<thead>
 				<tr>
 					<th></th>
@@ -87,19 +90,40 @@
 			</tbody>
 		</table>
 		<hr/>
-		<input class="form-control" type="text" ng-model="contact.name" placeholder="Nome"></input>
+		<form name="contactForm">
+			<input class="form-control" type="text" ng-model="contact.name" name="name" placeholder="Nome" ng-required="true" ng-minlength="10"></input>
+			<br/>
+			<input class="form-control" type="text" ng-model="contact.phone" name="phone" placeholder="Telefone" ng-required="true" ng-pattern="/^\d{4,5}-\d{4}$/"></input>
+			<br/>
+			<select class="form-control" ng-model="contact.company" ng-options="company.name group by company.category for company in companies">
+				<option value="">Selecione uma operadora</option>
+			</select>
+			<br/>
+			<select class="form-control" ng-model="contact.color" ng-options="color for color in colors">
+				<option value="" style="background-color: black">Selecione uma cor</option>
+			</select>
+		</form>
+
+		<div ng-messages="contactForm.name.$error" ng-show="contactForm.name.$dirty" class="alert alert-danger">
+			<div ng-message="required">
+				Por favor, preencha o campo nome!
+			</div>
+			<div ng-message="minlength">
+				O campo nome deve ter no mínimo 10 caracteres.
+			</div>
+		</div>
+
+		<div ng-messages="contactForm.phone.$error && contactForm.phone.$dirty">
+			<div ng-message="required" class="alert alert-danger">
+				Por favor, preencha o campo telefone!
+			</div>
+			<div ng-message="pattern" class="alert alert-danger">
+				O campo telefone deve ter o formato 99999-9999.
+			</div>
+		</div>
+
 		<br/>
-		<input class="form-control" type="text" ng-model="contact.phone" placeholder="Telefone"></input>
-		<br/>
-		<select class="form-control" ng-model="contact.company" ng-options="company.name group by company.category for company in companies">
-			<option value="">Selecione uma operadora</option>
-		</select>
-		<br/>
-		<select class="form-control" ng-model="contact.color" ng-options="color for color in colors">
-			<option value="">Selecione uma cor</option>
-		</select>
-		<br/>
-		<button class="btn btn-primary btn-block" ng-click="addContact(contact)" ng-disabled="!contact.name || !contact.phone || !contact.company">Adicionar</button>
+		<button class="btn btn-primary btn-block" ng-click="addContact(contact)" ng-disabled="contactForm.$invalid">Adicionar</button>
 		<button class="btn btn-danger btn-block" ng-click="deleteContact(contacts)" ng-if="isSomeSelected(contacts)">Apagar</button>
 	</div>
 </body>
