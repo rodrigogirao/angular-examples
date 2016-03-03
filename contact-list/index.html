@@ -3,18 +3,59 @@
 	<title>Hello World</title>
 	<script src="lib/angular/angular.js"></script>
 	<link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.min.css">
+	<style>
+		.jumbotron {
+			width: 500px;
+			text-align: center;
+			margin-top: 30px;
+			margin-left: auto;
+			margin-right: auto;
+			padding: 20px;
+		}
+		.table {
+			background-color: white;
+		}
+		.selected {
+			background-color: blue;
+			font-weight: bold;
+			color: white;
+		}
+	</style>
 	<script>
 		angular.module("contact-list", []);
 		angular.module("contact-list").controller("contactsController", function ($scope) {
 			$scope.app = "Lista Telefonica";
 			$scope.contacts = [
-				{name: "Pedro", phone: "123456789"},
-				{name: "Savio", phone: "987654321"},
-				{name: "Henrique", phone: "111111111"}
+			{name: "Pedro", phone: "(31) 123456789", company: {name: "Oi"}, color: "black"},
+			{name: "Savio", phone: "(41) 987654321", company: {name: "Tim"}, color: "green"},
+			{name: "Henrique", phone: " (25) 111111111", company: {name: "GVT"}, color: "orange"}
 			];
-			$scope.onClick = function(contact){
+			$scope.companies = [
+			{name: "Oi", code: 31, category: "Celular"},
+			{name: "Vivo", code: 15, category: "Celular"},
+			{name: "Tim", code: 41, category: "Celular"},
+			{name: "Oi", code: 31, category: "Fixo"},
+			{name: "GVT", code: 25, category: "Fixo"},
+			{name: "Embratel", code: 21, category: "Fixo"}
+			];
+			$scope.colors = [
+				"black", "yellow", "greenyellow", "green", "emerald", "blueviolet", "crimson", 
+				"firebrick", "orange", "darkcyan", "indigo", "pink", "red", "gray", "brown"
+			];
+			$scope.addContact = function(contact){
+				contact.phone = '(' + contact.company.code + ') ' + contact.phone;
 				$scope.contacts.push(angular.copy(contact));
 				delete $scope.contact;
+			}
+			$scope.deleteContact = function(contacts) {
+				$scope.contacts = contacts.filter(function (contact) {
+					if (!contact.selected) return contact;
+				});
+			}
+			$scope.isSomeSelected = function(contacts) {
+				return contacts.some(function(contact) {
+					return contact.selected;
+				})
 			}
 		});
 	</script>
@@ -24,22 +65,42 @@
 <body ng-controller="contactsController">
 	<div class="jumbotron">
 		<h3>{{app}}</h3>
-		<table class="table table-striped">
-			<tr>
-				<th>Nome</th>
-				<th>Telefone</th>
-			</tr>
-			<tr ng-repeat="contact in contacts">
-				<td>{{contact.name}}</td>
-				<td>{{contact.phone}}</td>
-			</tr>
+		<hr/>
+		<table class="table">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Nome</th>
+					<th>Telefone</th>
+					<th>Operadora</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="contact in contacts" ng-class="{'selected': contact.selected}">
+					<td><input type="checkbox" ng-model="contact.selected" /></td>
+					<td>{{contact.name}}</td>
+					<td>{{contact.phone}}</td>
+					<td>{{contact.company.name}}</td>
+					<td><div style="width: 20px; height: 20px;" ng-style="{'background-color': contact.color}"></div></td>
+				</tr>
+			</tbody>
 		</table>
 		<hr/>
-		<input class="form-control" type="text" ng-model="contact.name"></input>
+		<input class="form-control" type="text" ng-model="contact.name" placeholder="Nome"></input>
 		<br/>
-		<input class="form-control" type="text" ng-model="contact.phone"></input>
+		<input class="form-control" type="text" ng-model="contact.phone" placeholder="Telefone"></input>
 		<br/>
-		<button class="btn btn-primary btn-block" ng-click="onClick(contact)">Adicionar</button>
+		<select class="form-control" ng-model="contact.company" ng-options="company.name group by company.category for company in companies">
+			<option value="">Selecione uma operadora</option>
+		</select>
+		<br/>
+		<select class="form-control" ng-model="contact.color" ng-options="color for color in colors">
+			<option value="">Selecione uma cor</option>
+		</select>
+		<br/>
+		<button class="btn btn-primary btn-block" ng-click="addContact(contact)" ng-disabled="!contact.name || !contact.phone || !contact.company">Adicionar</button>
+		<button class="btn btn-danger btn-block" ng-click="deleteContact(contacts)" ng-if="isSomeSelected(contacts)">Apagar</button>
 	</div>
 </body>
 </html>
