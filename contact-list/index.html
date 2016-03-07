@@ -14,9 +14,6 @@
 			margin-right: auto;
 			padding: 20px;
 		}
-		.h3 {
-
-		}
 		.table {
 			background-color: white;
 		}
@@ -25,39 +22,52 @@
 			font-weight: bold;
 			color: white;
 		}
+		hr {
+			border-top-color: #d5d5d5;
+		}
 	</style>
 	<script>
 		angular.module("contact-list", ["ngMessages"]);
-		angular.module("contact-list").controller("contactsController", function ($scope, $filter) {
+		angular.module("contact-list").controller("contactsController", function ($scope, $http) {
 			$scope.app = "Lista Telefônica";
-			$scope.contacts = [
-			{name: "Pedro", phone: "(31) 12345-6789", company: {name: "Oi"}, color: "black", date: new Date()},
-			{name: "Savio", phone: "(41) 98765-4321", company: {name: "Tim"}, color: "green", date: new Date()},
-			{name: "Henrique", phone: " (25) 11111-1111", company: {name: "GVT"}, color: "orange", date: new Date()}
-			];
-			$scope.companies = [
-			{name: "Oi", code: 31, category: "Celular"},
-			{name: "Vivo", code: 15, category: "Celular"},
-			{name: "Tim", code: 41, category: "Celular"},
-			{name: "Oi", code: 31, category: "Fixo"},
-			{name: "GVT", code: 25, category: "Fixo"},
-			{name: "Embratel", code: 21, category: "Fixo"}
-			];
-			$scope.colors = [
-			"black", "yellow", "greenyellow", "green", "emerald", "blueviolet", "crimson", 
-			"firebrick", "orange", "darkcyan", "indigo", "pink", "red", "gray", "brown"
-			];
+			$scope.contacts = [];
+			$scope.companies = [];
+			$scope.colors = [];
+			var loadContacts = function () {
+			  $http.get("http://localhost:3412/contacts").success(function (data) {
+			    $scope.contacts = data;
+			  }).error(function (data, status) {
+			    $scope.message = "Aconteceu um problema: " + data;
+			  });
+			};
+			var loadCompanies = function () {
+			  $http.get("http://localhost:3412/companies").success(function (data) {
+			    $scope.companies = data;
+			  });
+			};
+			var loadColors = function () {
+			  $http.get("http://localhost:3412/colors").success(function (data) {
+			    $scope.colors = data;
+			  });
+			};
 			$scope.addContact = function(contact){
 				contact.phone = '(' + contact.company.code + ') ' + contact.phone;
 				contact.date = new Date();
-				$scope.contacts.push(angular.copy(contact));
-				delete $scope.contact;
-				$scope.contactForm.$setPristine();
+				$http.post("http://localhost:3412/contacts", contact).success(function (data) {
+					delete $scope.contact;
+					$scope.contactForm.$setPristine();
+					loadContacts();
+				});
 			};
 			$scope.deleteContact = function(contacts) {
-				$scope.contacts = contacts.filter(function (contact) {
+				var newContacts = contacts.filter(function (contact) {
 					if (!contact.selected) return contact;
 				});
+				console.log(newContacts);
+				$http.post("http://localhost:3412/contacts", newContacts).success(function (data) {
+					$scope.contacts = newContacts;
+				});
+
 			};
 			$scope.isSomeSelected = function(contacts) {
 				return contacts.some(function(contact) {
@@ -68,6 +78,10 @@
 				$scope.orderField = field;
 				$scope.orderDirection = !$scope.orderDirection;
 			};
+
+			loadContacts();
+			loadCompanies();
+			loadColors();
 		});
 	</script>
 
@@ -76,32 +90,34 @@
 <body ng-controller="contactsController">
 	<div class="jumbotron">
 		<h3>{{app}}</h3>
-		<hr/>
-		<input class="form-control" type="text" ng-model="searchFilter" placeholder="Pesquisa"/>
-		<br/>
-		<table ng-show="contacts.length > 0" class="table">
-			<thead>
-				<tr>
-					<th></th>
-					<th><a href="" ng-click="orderBy('name')">Nome</a></th>
-					<th><a href="" ng-click="orderBy('phone')">Telefone</a></th>
-					<th>Operadora</th>
-					<th>Data</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="contact in contacts | filter:searchFilter | orderBy:orderField:orderDirection" ng-class="{'selected': contact.selected}">
-					<td><input type="checkbox" ng-model="contact.selected" /></td>
-					<td>{{contact.name | uppercase}}</td>
-					<td>{{contact.phone}}</td>
-					<td>{{contact.company.name | lowercase}}</td>
-					<td>{{contact.date | date:'dd/MM/yyyy HH:mm'}}</td>
-					<td><div style="width: 20px; height: 20px;" ng-style="{'background-color': contact.color}"></div></td>
-				</tr>
-			</tbody>
-		</table>
-		<hr/>
+		<div ng-show="contacts.length > 0">
+			<hr/>
+			<input class="form-control" type="text" ng-model="searchFilter" placeholder="Pesquisa"/>
+			<br/>
+			<table class="table">
+				<thead>
+					<tr>
+						<th></th>
+						<th><a href="" ng-click="orderBy('name')">Nome</a></th>
+						<th><a href="" ng-click="orderBy('phone')">Telefone</a></th>
+						<th>Operadora</th>
+						<th>Data</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="contact in contacts | filter:searchFilter | orderBy:orderField:orderDirection" ng-class="{'selected': contact.selected}">
+						<td><input type="checkbox" ng-model="contact.selected" /></td>
+						<td>{{contact.name | uppercase}}</td>
+						<td>{{contact.phone}}</td>
+						<td>{{contact.company.name | lowercase}}</td>
+						<td>{{contact.date | date:'dd/MM/yyyy HH:mm'}}</td>
+						<td><div style="width: 20px; height: 20px;" ng-style="{'background-color': contact.color}"></div></td>
+					</tr>
+				</tbody>
+			</table>
+			<hr/>
+		</div>
 		<form name="contactForm">
 			<input class="form-control" type="text" ng-model="contact.name" name="name" placeholder="Nome" ng-required="true" ng-minlength="10"></input>
 			<br/>
