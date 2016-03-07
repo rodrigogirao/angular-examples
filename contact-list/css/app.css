@@ -1,0 +1,19 @@
+.jumbotron {
+  width: 600px;
+  text-align: center;
+  margin-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 20px;
+}
+.table {
+  background-color: white;
+}
+.selected {
+  background-color: blue;
+  font-weight: bold;
+  color: white;
+}
+hr {
+  border-top-color: #d5d5d5;
+}
