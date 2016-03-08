@@ -3,8 +3,8 @@ angular.module("contact-list").factory("contactsAPI", function ($http, config) {
 		return $http.get(config.baseUrl + "/contacts");
 	};
 
-	var _saveContacts = function (conacts) {
-		return $http.post(config.baseUrl + "/contacts", contacs);
+	var _saveContacts = function (contacts) {
+		return $http.post(config.baseUrl + "/contacts", contacts);
 	};
 
 	return {

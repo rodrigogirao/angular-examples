@@ -10,6 +10,8 @@
 	<script src="js/services/companiesAPIService.js"></script>
 	<script src="js/services/colorsAPIService.js"></script>
 	<script src="js/value/configValue.js"></script>
+	<script src="js/filters/nameFilter.js"></script>
+	<script src="js/filters/ellipsisFilter.js"></script>
 	<link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="css/app.css">
 </head>
@@ -35,7 +37,7 @@
 				<tbody>
 					<tr ng-repeat="contact in contacts | filter:searchFilter | orderBy:orderField:orderDirection" ng-class="{'selected': contact.selected}">
 						<td><input type="checkbox" ng-model="contact.selected" /></td>
-						<td>{{contact.name | uppercase}}</td>
+						<td>{{contact.name | name | ellipsis:10}}</td>
 						<td>{{contact.phone}}</td>
 						<td>{{contact.company.name | lowercase}}</td>
 						<td>{{contact.date | date:'dd/MM/yyyy HH:mm'}}</td>
